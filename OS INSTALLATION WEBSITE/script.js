@@ -45,23 +45,6 @@ if (isFileProtocol) {
                 iframe.parentElement.replaceChild(videoLink, iframe);
             }
         });
-        
-        // Show notice about server
-        const notice = document.createElement('div');
-        notice.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #ff9800; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10000; max-width: 300px;';
-        notice.innerHTML = `
-            <strong>💡 Tip:</strong><br>
-            For embedded videos, use the server:<br>
-            <small>Double-click "OPEN WEBSITE.bat"</small>
-        `;
-        document.body.appendChild(notice);
-        
-        // Auto-hide notice after 10 seconds
-        setTimeout(() => {
-            notice.style.transition = 'opacity 0.5s';
-            notice.style.opacity = '0';
-            setTimeout(() => notice.remove(), 500);
-        }, 10000);
     });
 }
 
@@ -70,10 +53,69 @@ const handleMobileMenu = () => {
     // Can be expanded for mobile hamburger menu if needed
 };
 
+// Video Modal functionality
+function playVideo(videoId) {
+    // If running from file:// protocol, open YouTube directly
+    if (window.location.protocol === 'file:') {
+        window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+        return;
+    }
+    
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('videoFrame');
+    
+    // Set YouTube embed URL with proper parameters
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1&origin=${window.location.hostname || 'localhost'}&widgetid=1`;
+    
+    // Show modal
+    modal.style.display = 'flex';
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+}
+
+// Close video modal
+function closeVideoModal() {
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('videoFrame');
+    
+    // Stop video and hide modal
+    iframe.src = '';
+    modal.style.display = 'none';
+    
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     console.log('OS Installation Tutorials - Website Loaded');
     if (isFileProtocol) {
         console.log('Running from file:// - Videos will be clickable links');
     }
+    
+    // Video modal event listeners
+    const modal = document.getElementById('videoModal');
+    const closeBtn = document.querySelector('.video-modal-close');
+    
+    // Close modal when clicking X
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeVideoModal);
+    }
+    
+    // Close modal when clicking outside video
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeVideoModal();
+            }
+        });
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeVideoModal();
+        }
+    });
 });
